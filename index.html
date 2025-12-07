@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>WebSocket Form Example</title>
+</head>
+<body>
+
+<h2>WebSocket Demo</h2>
+
+<button onclick="connectWS()">Connect</button>
+<p id="status"></p>
+<ul>
+
+</ul>
+<form id="msgForm" onsubmit="sendMessage(event)">
+    <input id="msgInput" type="text" placeholder="Enter your message" required />
+    <button type="submit">Send</button>
+</form>
+<button onclick="closeConnection()">close connection</button>
+<script>
+let socket = null;
+
+function connectWS() {
+    socket = new WebSocket("ws://localhost:8080");
+
+    socket.onopen = () => {
+        document.getElementById("status").innerText = "Connected to WebSocket";
+        console.log("Connected!");
+    };
+
+    socket.onmessage = (msg) => {
+        console.log("Message from server:", msg.data); 
+        let element= document.querySelector('ul') ; 
+        let childelemet = document.createElement('li') ; 
+        childelemet.innerText  = msg.data   ; 
+        element.appendChild(childelemet) ; 
+    };
+
+    socket.onerror = (err) => {
+        console.log("WebSocket error:", err);
+    };
+
+    socket.onclose = () => {
+        document.getElementById("status").innerText = "Disconnected";
+        console.log("WebSocket Closed");
+    };
+}
+
+function sendMessage(event) {
+    event.preventDefault();  // ❗ prevents page reload
+
+    const message = document.getElementById("msgInput").value;
+
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        alert("Connect first!");
+        return;
+    }
+
+    socket.send(message); // ✔ correctly send message
+    console.log("Sent:", message);
+
+    document.getElementById("msgInput").value = ""; // clear input
+} 
+
+
+function closeConnection(){ 
+    socket.close(1000, "Client says bye");
+
+}
+</script>
+
+</body>
+</html>
